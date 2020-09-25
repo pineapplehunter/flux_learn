@@ -10,6 +10,19 @@ paginate: true
 
 ダニエル(@daniel_program)
 
+<!--
+Juliaで機械学習ということで発表させていただきます。
+ダニエルです。よろしくお願いします。
+-->
+
+---
+
+## 自己紹介
+
+- ニックネーム: **ダニエル**
+- 所属: **農工大 知能情報システム工学科**
+- 好きなプログラミング言語: `Julia`, `Rust`
+
 ---
 
 ## みなさん Julia はご存知ですか？
@@ -24,12 +37,19 @@ paginate: true
 println("Hello World!")
 ```
 
+- 科学計算が得意
 - 書きやすい
 - 速い(JIT)
+
+<!--
+Juliaとは
+-->
 
 ---
 
 ## 書きやすい一例
+
+行列計算は簡単に使える
 
 ```julia
 julia> A = [1 2
@@ -49,9 +69,16 @@ julia> A .* A
  9  16
 ```
 
+<!--
+書きやすいなと感じるコードの例としては、行列計算があります。
+コードを見ていただくと、1行目で行列を定義しています。縦と横に書くことで行列として認識してくれます。個人的には見て目がかなり良いと思っています。一行に書くことも可能です。
+そして2つの行列の演算を載せていますが、上の方は普通の行列の積です。機械学習ではよく使う演算なので簡単に使えて便利です。
+下の演算は、同じ位置の要素同士の積です。.オペレータを使うと、各要素に適用してくれます。この.オペレータは掛け算以外にも足し算や引き算割り算はもちろん、関数呼び出しにも適用できるので、なれるととても便利な文法です。
+-->
+
 ---
 
-## データの表示
+## プロット
 
 ```julia
 julia> using Plots
@@ -63,17 +90,23 @@ julia> y = sin.(x) # .は全てに適用
 101-element Array{Float64,1}:
   0.0
   0.09983341664682815
-  0.19866933079506122
-  0.29552020666133955
   ⋮
  -0.3664791292519284
- -0.4575358937753214
  -0.5440211108893698
 
 julia> plot(x,y)
 ```
 
-![Plot bg right 100%](./sin_wave.png)
+![Plot bg right 100%](https://raw.githubusercontent.com/pineapplehunter/flux_learn/main/sin_wave.png)
+
+<!--
+ここではデータのプロットをする例を載せています。
+データのプロットは簡単にできます。ここではsin波形を出力していますが、手順としては、まずPlotsライブラリをインポートします。次にxとyを定義します。xには0から0.1刻みで10までの配列を入れています。yでは.オペレータで各x要素にsinを適用しています。
+
+プロットには最後にplot関数を呼び出します。
+
+このように簡単にデータのプロットもできます。
+-->
 
 ---
 
@@ -82,17 +115,27 @@ julia> plot(x,y)
 ![Julia Micro-Benchmarks stats](https://julialang.org/assets/benchmarks/benchmarks.svg)
 [Julia Micro-Benchmarks](https://julialang.org/benchmarks/)
 
+<!--
+次にJuliaの速さについて紹介します。
+このグラフはいくつかの言語でマイクロベンチマークを動かした結果のグラフです。一番左がC言語で、その隣がJuliaとなっています。見てわかるとおり相当早いです。
+機械学習は最近ほとんどPythonでされていますが、縦軸が対数スケールになっていることを考慮すると、Pythonと比べるとほとんどのベンチマークでかなりの差が出ていることが解ると思います。
+-->
+
 ---
 
 ## Julia での機械学習はここが良い
 
 - 簡単に記述できる(Pytorch 風)
-- 自動微分が楽
+- 自動微分が高性能
 - よりインタラクティブに分析できる
+
+<!--
+さて、そんなJuliaなんですが、今までに紹介したJuliaの便利な機能の他にもJuliaが機械学習に向いている理由があります。
+-->
 
 ---
 
-![Flux.jl bg 70%](https://raw.githubusercontent.com/FluxML/fluxml.github.io/master/logo.png)
+![Flux.jl bg 60%](https://raw.githubusercontent.com/FluxML/fluxml.github.io/master/logo.png)
 
 ---
 
@@ -150,13 +193,36 @@ top:
 
 多変数関数のためにはより汎用な`gradient`関数が用意されています。
 
-<!-- LLVMの部分はコメント部分を省略しています -->
+<!-- LLVMの部分はコメント部分を省略しています
+このように自動微分が恐ろしく簡単にできてしまうため自分のレイヤーを簡単に定義することができます。
+ -->
+
+---
+
+## 自分の活性化関数を定義
+
+```julia
+julia> Chain(
+           Dense(784, 128),
+           x -> max.(0, x), # ReLUを定義しています
+           Dense(128, 10),
+           logsoftmax
+       )
+
+julia> model(rand(784,2))
+10×2 Array{Float32,2}:
+ -2.36733  -3.14914
+ -1.59384  -2.54492
+  ⋮
+```
+
+<!--
+例えば、例として活性化関数を定義してみます。このソースコードのコメントの書いてある行を見ると、おもむろに無名関数が書いてあります。これはReLUの定義を書いています。このように雑に書いたとしてもモデルとして正しく機能します。
+-->
 
 ---
 
 ## 自分のレイヤーを定義
-
-Flux では自分のレイヤーを作ることはとても簡単です。
 
 ```julia
 struct MyDense # レイヤーの構造体定義
@@ -176,26 +242,47 @@ Flux.@functor MyDense # パラメータを学習可能にする
 
 これだけの定義で Flux のモデルに組み込めます。
 
+<!--
+また、これはDenseレイヤーを自作してみています。
+はじめに、MyDenseという構造体を定義しています。中身は重みのWとバイアスのBです。
+次に、よく見る入力数と出力数からWとBを初期化するためのコードを書いていきます。inputとouptutはInteger型にしています。そして、中身ではランダムな値で初期化しています。
+次に、レイヤーの動作を定義しています。少し不思議な構文ですが、これは構造体を関数のように呼び出したときの定義です。PythonのClassでいう__call__のようなものです。今回はW*x+bで定義しています。
+最後にFluxが定義している@functorマクロを使い構造体の中の重みとバイアスを学習可能だとマークします。
+
+これで自前のDenseレイヤーは完成です。実際のDenseレイヤーは初期化方法や活性化関数などを指定できるのでもう少しだけ文量は増えますがこれとほとんど同じ定義らしいです。
+-->
+
 ---
 
 ## インタラクティブ
 
-[Pluto.jl][]
+[![Pluto.jl](https://raw.githubusercontent.com/fonsp/Pluto.jl/master/frontend/img/logo.svg)][pluto.jl]
+
+<!--
+そして、僕がJuliaで機械学習をするメリットとして、一番推したいのがインタラクティブ性です。これは実演します。
+-->
 
 ---
 
-## 使用されているところ
+## 便利なライブラリ
 
-[DifferentialEquations.jl][]: 微分方程式を解ける
+汎用ライブラリ
+
+- [Plots.jl][]: グラフの描写
+- [PyCall.jl][]: Python の読み込み
+- [DataFrames.jl][]: Pandas のようにデータを格納できる
+- [CUDA.jl][]: GPU を使える
+
+機械学習用ライブラリ
+
+- [Zygote][]: 自動微分が実装されている
+- [Metalhead][]: VGG 等のモデル
+- [DifferentialEquations.jl][]: 微分方程式を解ける
+- [model zoo][]: Flux で実装されたモデルいろいろ
 
 ---
 
-## 書きやすくするライブラリ
-
-[Plots.jl][]: グラフの描写
-[PyCall.jl][]: Python の読み込み
-[DataFrames.jl][]: Pandas のようにデータを格納できる
-[CUDA.jl][]: GPU を使える
+## ご清聴ありがとうございました
 
 [plots.jl]: https://github.com/JuliaPlots/Plots.jl
 [pycall.jl]: https://github.com/JuliaPy/PyCall.jl
@@ -204,3 +291,6 @@ Flux.@functor MyDense # パラメータを学習可能にする
 [cuda.jl]: https://github.com/JuliaGPU/CUDA.jl
 [flux.jl]: https://github.com/FluxML/Flux.jl
 [pluto.jl]: https://github.com/fonsp/Pluto.jl
+[model zoo]: https://github.com/FluxML/model-zoo/
+[metalhead]: https://github.com/FluxML/Metalhead.jl
+[zygote]: https://fluxml.ai/Zygote.jl/latest/

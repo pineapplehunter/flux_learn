@@ -36,7 +36,7 @@ function make_model()
         flatten,
         Dense(200, 64, relu),
         Dense(64, 10),
-        
+        logsoftmax,
     )
 end
 
@@ -52,14 +52,14 @@ function train()
     loss(x, y) = logitcrossentropy(model(x), y)
     opt = Flux.Optimise.ADAM()
 
-    function callback()
+    function status()
         @info("loss \t= $(loss(Xtest,Ytest))")
         @info("accuracy \t= $(accuracy(Xtest,Ytest,model))")
     end
 
     @epochs 1 begin
         Flux.train!(loss, params(model), data, opt)
-        callback()
+        status()
     end
 
     @save "model.bson" model
