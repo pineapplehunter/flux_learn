@@ -4,6 +4,15 @@
 using Markdown
 using InteractiveUtils
 
+# This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
+macro bind(def, element)
+    quote
+        local el = $(esc(element))
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        el
+    end
+end
+
 # ╔═╡ f97ae72e-ff4b-11ea-1c88-fd596094e009
 begin
 	let
@@ -12,7 +21,7 @@ begin
 	end
 	
 	using Flux
-	using Flux:onecold
+	using Flux:onecold,Data.MNIST
  	using Plots
 	using BSON
 	
@@ -27,14 +36,36 @@ end
 # ╔═╡ 02ba2850-ff4d-11ea-139f-3d5a67ea5351
 model = BSON.load("model.bson")[:model]
 
+# ╔═╡ adbfe39e-ffab-11ea-3ee9-cd6fb4d8416c
+@bind go html"<input type='button'>" 
+
+# ╔═╡ da41fb90-ffa7-11ea-3325-ad93acd42de4
+begin
+	go
+	idx = rand(1:length(MNIST.images(:test)))
+end
+
 # ╔═╡ 9d3d4dca-ff53-11ea-1477-81503e06f526
-img = rand(Flux.Data.MNIST.images(:test))
+img = MNIST.images(:test)[idx]
 
 # ╔═╡ 7d186b08-ff56-11ea-3845-a9cd34915f13
 img_data = reshape(Float32.(img),28,28,1,1);
 
+# ╔═╡ 3cd1a690-ffa8-11ea-1fa8-d7570484e874
+correct = MNIST.labels(:test)[idx]
+
 # ╔═╡ 559668de-ff5c-11ea-0fe7-b1d039f5534c
-onecold(model(img_data),0:9)[1]
+predict = onecold(model(img_data),0:9)[1]
+
+# ╔═╡ 29d61b5a-ffab-11ea-2e07-f1d22638a4c4
+md"""
+## $(correct == predict ? "正解" : "不正解")
+"""
+
+# ╔═╡ 76cd13b6-ffa8-11ea-34a0-e5f3d5dd20c8
+md"""
+正解は**$(correct)**でモデルは**$(predict)**と予想しました
+"""
 
 # ╔═╡ 5fc7e666-ff5e-11ea-2e0e-6fdbaa8a35e6
 md"""
@@ -77,8 +108,13 @@ md"""
 
 # ╔═╡ Cell order:
 # ╠═02ba2850-ff4d-11ea-139f-3d5a67ea5351
+# ╠═adbfe39e-ffab-11ea-3ee9-cd6fb4d8416c
+# ╠═da41fb90-ffa7-11ea-3325-ad93acd42de4
 # ╠═9d3d4dca-ff53-11ea-1477-81503e06f526
+# ╟─29d61b5a-ffab-11ea-2e07-f1d22638a4c4
+# ╟─76cd13b6-ffa8-11ea-34a0-e5f3d5dd20c8
 # ╠═7d186b08-ff56-11ea-3845-a9cd34915f13
+# ╠═3cd1a690-ffa8-11ea-1fa8-d7570484e874
 # ╠═559668de-ff5c-11ea-0fe7-b1d039f5534c
 # ╠═c93c4e50-ff51-11ea-293f-b52d4e0ddc5a
 # ╠═bc88a144-ff57-11ea-2f38-71dc1775da02

@@ -39,7 +39,7 @@ println("Hello World!")
 
 - 科学計算が得意
 - 書きやすい
-- 速い(JIT)
+- 速い(JIT)※
 
 <!--
 Juliaとは
@@ -260,6 +260,10 @@ Flux.@functor MyDense # パラメータを学習可能にする
 
 <!--
 そして、僕がJuliaで機械学習をするメリットとして、一番推したいのがインタラクティブ性です。これは実演します。
+
+* Julia REPL
+* VSCode
+* Pluto
 -->
 
 ---
